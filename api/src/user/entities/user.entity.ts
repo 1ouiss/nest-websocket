@@ -13,4 +13,10 @@ export class UserEntity extends TimestampEntites {
 
   @Column()
   password: string;
+
+  // @Column({
+  //   type: 'enum',
+  //   enum: ROLES_ENUM,
+  // })
+  // role: ROLES_ENUM;
 }
