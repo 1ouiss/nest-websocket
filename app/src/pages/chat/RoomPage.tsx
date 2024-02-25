@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
 import socket from "../../utils/socket";
 import UserList from "./UserList";
+import RoomList from "./RoomList";
+import { useParams } from "react-router-dom";
 
 const RoomPage = () => {
+  const { id } = useParams();
   const [message, setMessage] = useState("");
+  const [newRoom, setNewRoom] = useState("");
+
+  const [rooms, setRooms] = useState({});
+
   useEffect(() => {
     // on new user connected
     socket.on("users", (data) => {
@@ -14,15 +21,33 @@ const RoomPage = () => {
       console.log(data);
       console.log("chat");
     });
+
+    socket.on("rooms", (data) => {
+      setRooms(data);
+    });
   }, []);
+
+  useEffect(() => {
+    console.log(id);
+  }, [id]);
 
   return (
     <div>
       <h1>Room</h1>
+      {id &&
+        rooms[id] &&
+        rooms[id].messages.map((message, index) => (
+          <div key={index}>
+            {message.message} {message.user}
+          </div>
+        ))}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          socket.emit("chat", message);
+          socket.emit("message", {
+            room: id,
+            message,
+          });
           setMessage("");
         }}
       >
@@ -34,6 +59,23 @@ const RoomPage = () => {
         <button type="submit">Envoyer</button>
       </form>
       <UserList />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          socket.emit("joinRoom", newRoom);
+          setNewRoom("");
+        }}
+      >
+        <input
+          type="text"
+          onChange={(e) => {
+            setNewRoom(e.target.value);
+          }}
+          value={newRoom}
+        />
+        <button type="submit">join room</button>
+      </form>
+      <RoomList rooms={rooms} />
     </div>
   );
 };

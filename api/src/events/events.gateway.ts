@@ -25,17 +25,48 @@ export class EventsGateway
 
   private connectedUsers = [];
 
+  private rooms = {
+    general: {
+      users: [],
+      messages: [],
+    },
+  };
+
   @SubscribeMessage('chat')
   async handleMessages(client: Socket, data: any) {
     console.log('chat', data);
     this.server.emit('chat', data);
   }
 
+  // @SubscribeMessage('users')
+  // async handleUsers(client: Socket, data: any) {
+  //   console.log('users', data);
+  //   this.server.emit('users', data);
+  // }
+
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(client: Socket, room: string) {
     console.log('joinRoom', room);
+    if (!this.rooms[room]) {
+      this.rooms[room] = {
+        users: [
+          this.connectedUsers.find(
+            (connectedUser) => connectedUser.socketId === client.id,
+          ),
+        ],
+        messages: [],
+      };
+    }
+    console.log(this.rooms);
     client.join(room);
     this.server.to(room).emit('joinRoom', room);
+    this.handleRooms(client, null);
+  }
+
+  @SubscribeMessage('rooms')
+  async handleRooms(client: Socket, data: any) {
+    console.log('rooms', data);
+    this.server.emit('rooms', this.rooms);
   }
 
   @SubscribeMessage('leaveRoom')
@@ -49,6 +80,11 @@ export class EventsGateway
   async handleMessage(client: Socket, data: any) {
     console.log('message', data);
     const { room, message } = data;
+    this.rooms[room].messages.push({
+      user: client.id,
+      message,
+    });
+    this.handleRooms(client, null);
     this.server.to(room).emit('message', message);
   }
 
@@ -74,6 +110,7 @@ export class EventsGateway
       });
       console.log(this.connectedUsers);
       this.server.emit('users', this.connectedUsers);
+      this.server.emit('rooms', this.rooms);
     }
   }
 
