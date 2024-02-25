@@ -5,14 +5,15 @@
     // ou
     cd api && docker-compose -f docker-compose-dev.yml up -d
 
-    nppm i
+    yarn
 
-    npm run start:dev
+    yarn start:dev
 ```
 
 # APP
+
 ```bash
-    cd app && npm i --force
+    cd app && yarn
     // ou
-    npm run dev
+    yarn dev
 ```
