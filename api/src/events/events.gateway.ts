@@ -88,7 +88,9 @@ export class EventsGateway
     console.log('message', data);
     const { room, message } = data;
     this.rooms[room].messages.push({
-      user: client.id,
+      user: this.connectedUsers.find(
+        (connectedUser) => connectedUser.socketId === client.id,
+      ),
       message,
     });
     this.handleRooms(client, null);

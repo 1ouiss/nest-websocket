@@ -42,7 +42,7 @@ const RoomPage = () => {
         rooms[id] &&
         rooms[id].messages.map((message, index) => (
           <div key={index}>
-            {message.message} {message.user}
+            {message.message} {message.user.user.username}
           </div>
         ))}
       <form

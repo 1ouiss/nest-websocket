@@ -8,9 +8,7 @@ network:
 
 .PHONY: down
 down:
-	docker stop api-meeting
-	docker rm api-meeting
-	docker rmi api-meeting
+	docker-compose -f docker-compose-dev.yml down
 	
 
 .PHONY: reset
