@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import socket from "../../utils/socket";
 import UserList from "./UserList";
 import RoomList from "./RoomList";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const RoomPage = () => {
   const { id } = useParams();
@@ -10,6 +10,8 @@ const RoomPage = () => {
   const [newRoom, setNewRoom] = useState("");
 
   const [rooms, setRooms] = useState({});
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     // on new user connected
@@ -23,6 +25,8 @@ const RoomPage = () => {
     });
 
     socket.on("rooms", (data) => {
+      console.log(data);
+
       setRooms(data);
     });
   }, []);
@@ -64,6 +68,7 @@ const RoomPage = () => {
           e.preventDefault();
           socket.emit("joinRoom", newRoom);
           setNewRoom("");
+          navigate(`/rooms/${newRoom}`);
         }}
       >
         <input

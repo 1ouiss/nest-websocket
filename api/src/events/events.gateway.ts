@@ -57,6 +57,13 @@ export class EventsGateway
         messages: [],
       };
     }
+    if (!this.rooms[room].users.find((user) => user.socketId === client.id)) {
+      this.rooms[room].users.push(
+        this.connectedUsers.find(
+          (connectedUser) => connectedUser.socketId === client.id,
+        ),
+      );
+    }
     console.log(this.rooms);
     client.join(room);
     this.server.to(room).emit('joinRoom', room);
@@ -88,6 +95,23 @@ export class EventsGateway
     this.server.to(room).emit('message', message);
   }
 
+  @SubscribeMessage('startPrivateChat')
+  async handleStartPrivateChat(client: Socket, recipientUsername: string) {
+    console.log('startPrivateChat', recipientUsername);
+    const recipient = this.connectedUsers.find(
+      (user) => user.user.username === recipientUsername,
+    );
+    if (recipient) {
+      client.join(recipient.socketId); // Client A rejoint la room du Client B
+      this.server
+        .to(recipient.socketId)
+        .emit('privateChatStarted', recipientUsername); // Informe le Client B de rejoindre la conversation privée
+    } else {
+      console.log('Recipient not found');
+      // Gérer le cas où le destinataire n'est pas connecté ou n'existe pas
+    }
+  }
+
   async handleConnection(client: Socket) {
     console.log('Client connected');
     const { token } = client.handshake.headers;
@@ -108,6 +132,12 @@ export class EventsGateway
         user,
         socketId: client.id,
       });
+      if (!this.rooms.general.users.find((u) => u.user.username === username)) {
+        this.rooms.general.users.push({
+          user,
+          socketId: client.id,
+        });
+      }
       console.log(this.connectedUsers);
       this.server.emit('users', this.connectedUsers);
       this.server.emit('rooms', this.rooms);

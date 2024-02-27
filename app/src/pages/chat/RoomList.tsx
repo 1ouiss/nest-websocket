@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import socket from "../../utils/socket";
 
 const RoomList = ({ rooms }) => {
   const navigate = useNavigate();
@@ -8,7 +9,13 @@ const RoomList = ({ rooms }) => {
       <h3>Rooms</h3>
       <ul>
         {Object.keys(rooms).map((room, index) => (
-          <li key={index} onClick={() => navigate(`/rooms/${room}`)}>
+          <li
+            key={index}
+            onClick={() => {
+              navigate(`/rooms/${room}`);
+              socket.emit("joinRoom", room);
+            }}
+          >
             {room}
           </li>
         ))}
